@@ -265,7 +265,7 @@ namespace pygmalion
                         break;
 
                     case TokenType.Switch:
-                        s = execute(n.discriminant, x);
+                        s = Reference.GetValue(GLOBAL, execute(n.discriminant, x));
                         aNode = n.cases;
                         Node tt;
                         switchLoop = false;
