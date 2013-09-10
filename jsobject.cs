@@ -258,15 +258,25 @@ namespace pygmalion
             if ((me is JSUndefined || other is JSUndefined) ||
                 (me == null || other == null))
                 throw new FalseReturn();
-            if (me is bool)
-                return (bool)me ? -1 : 0 + (JSObject.ToBool(GLOBAL, other) ? 1 : 0);
-            else if (me is double)
+			
+            if (me is bool || other is bool)
+			{
+				bool b1=ToBool(GLOBAL,me),
+					 b2=ToBool(GLOBAL,other);
+				return b1==b2?0:(b1?1:0);
+			}
+			
+            if (me is double || other is double)
             {
-                double a = (double)me;
-                double b = JSObject.ToNumber(GLOBAL, other);
-                return a < b ? -1 : a > b ? 1 : 0;
+                double a=ToNumber(GLOBAL,me),
+                	   b=ToNumber(GLOBAL,other);
+				if (!double.IsNaN(a)&&!double.IsNaN(b))
+				{
+	                return a < b ? -1 : a > b ? 1 : 0;
+				}
             }
-            else return me.ToString().CompareTo(other.ToString());
+			
+            return me.ToString().CompareTo(other.ToString());
         }
 
         public static object ToJS(ExecutionContext GLOBAL, object val)
