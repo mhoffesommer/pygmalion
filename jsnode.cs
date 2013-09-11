@@ -219,39 +219,54 @@ namespace pygmalion
             }
         }
 
-        string ToString(string INDENTATION, List<Node> usedNodes)
+        void ToString(StringBuilder res, string INDENTATION, HashSet<Node> usedNodes)
         {
-            if (usedNodes.Contains(this))
-                return INDENTATION + "{ ... }";
-            else
-                usedNodes.Add(this);
-            string s = INDENTATION + "{\n";
-            s += INDENTATION + "type: " + tokenstr(this.type) + ",\n";
-            s += INDENTATION + "value: " + (value != null ? value.ToString() : "(null)") + ",\n";
+			if (INDENTATION.Length > 4) 
+			{
+				res.Append (".....");
+				return;
+			}
+
+			if (usedNodes.Contains (this))
+			{
+				res.Append(INDENTATION).Append("{ ... }");
+				return;
+			}
+			usedNodes.Add(this);
+
+			res.Append(INDENTATION).Append("{\n");
+			res.Append(INDENTATION).Append("type: ").Append(tokenstr(this.type)).Append(",\n");
+			res.Append(INDENTATION).Append("value: ").Append(value != null ? value.ToString() : "(null)").Append(",\n");
             foreach (FieldInfo fi in GetType().GetFields())
+			{
                 if (fi.FieldType == typeof(Node))
                 {
                     Node fv = (Node)fi.GetValue(this);
                     if (fv != null)
                     {
-                        s += INDENTATION + fi.Name + ":\n" + fv.ToString(INDENTATION + "    ", usedNodes) + ",\n";
+						res.Append(INDENTATION).Append(fi.Name).Append(":\n");
+						fv.ToString(res,INDENTATION + "    ", usedNodes);
+						res.Append(",\n");
                     }
                 }
-            int i;
-            for (i = 0; i < Count; i++)
+			}
+            for (int i = 0; i < Count; i++)
             {
-                s += INDENTATION + "[" + i + "]:\n" + this[i].ToString(INDENTATION + "    ", usedNodes) + ",\n";
+				res.Append(INDENTATION).Append("[" + i + "]:\n");
+				this[i].ToString(res,INDENTATION + "    ", usedNodes);
+				res.Append(",\n");
             }
-            s += INDENTATION + "}";
-            return s;
+			res.Append(INDENTATION).Append("}");
         }
 
         public string Breakout { get { return this.ToString(); } }
 
         public override string ToString()
         {
-            List<Node> usedNodes = new List<Node>();
-            return ToString("", usedNodes);
+			StringBuilder res=new StringBuilder();
+			HashSet<Node> usedNodes = new HashSet<Node>();
+            ToString(res,"", usedNodes);
+			return res.ToString ();
         }
 
         public string getSource()
