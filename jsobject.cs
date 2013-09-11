@@ -688,54 +688,48 @@ namespace pygmalion
             return ConvertToType(GLOBAL, arg, argtype.ParameterType, out result);
         }
 
-        public static object[] SatisfyArgumentList(ExecutionContext GLOBAL, JSObjectBase args, ParameterInfo[] argtypes)
+        public static object[] SatisfyArgumentList(ExecutionContext GLOBAL, JSObjectBase srcArgs, ParameterInfo[] dstTypes)
         {
-            int i = 0;
+            int iSrc = 0, iDst=0;
             object resob;
             List<object> result = new List<object>();
 
             // Special case for GLOBAL
-            if (argtypes.Length > 0 && argtypes[0].ParameterType == typeof(ExecutionContext))
+			if (dstTypes.Length > 0 && dstTypes[0].ParameterType == typeof(ExecutionContext))
             {
                 result.Add(GLOBAL);
-                i = 1;
+                iDst = 1;
             }
-            for (; i < JSObject.ToNumber(GLOBAL, args.GetItem(GLOBAL, "length").GetValue(GLOBAL)) && i < argtypes.Length; i++)
+			int srcArgsLength = (int)JSObject.ToNumber (GLOBAL, srcArgs.GetItem (GLOBAL, "length").GetValue (GLOBAL));
+			for (; iSrc < srcArgsLength && iDst < dstTypes.Length; ++iSrc, ++iDst)
             {
                 // Do array match on the rest
-                if (IsParamsArray(argtypes[i]))
+				if (IsParamsArray(dstTypes[iDst]))
                     break;
 
-                if (ConvertArgumentToType(GLOBAL, args.GetItem(GLOBAL, i.ToString()).GetValue(GLOBAL), argtypes[i], out resob))
-                    result.Add(resob);
-                else return null;
+				if (!ConvertArgumentToType (GLOBAL, srcArgs.GetItem (GLOBAL, iSrc.ToString ()).GetValue (GLOBAL), dstTypes [iDst], out resob))
+					return null;
+
+                result.Add(resob);
             }
 
-            if (i < argtypes.Length)
+			if (iDst < dstTypes.Length)
             {
-                if (!IsParamsArray(argtypes[i]))
+				if (!IsParamsArray(dstTypes[iDst]))
                     return null;
-                else
-                {
-                    // Empty varargs ...
-                    System.Collections.ArrayList empty = new System.Collections.ArrayList();
-                    result.Add(empty.ToArray(argtypes[i].ParameterType.GetElementType()));
-                    return result.ToArray();
-                }
-            }
 
-            if (i < argtypes.Length)
-            {
-                Type eltType = argtypes[i].ParameterType.GetElementType();
-                System.Collections.ArrayList paramset = new System.Collections.ArrayList();
-                for (; i < JSObject.ToNumber(GLOBAL, args.GetItem(GLOBAL, "length").GetValue(GLOBAL)); i++)
-                {
-                    if (ConvertToType(GLOBAL, args.GetItem(GLOBAL, i.ToString()).GetValue(GLOBAL), eltType, out resob))
-                        paramset.Add(resob);
-                    else return null;
-                }
-                result.Add(paramset.ToArray(eltType));
+				System.Collections.ArrayList paramset = new System.Collections.ArrayList();
+				Type eltType = dstTypes[iDst].ParameterType.GetElementType();
+				for (; iSrc < srcArgsLength; iSrc++)
+				{
+					if (!ConvertToType (GLOBAL, srcArgs.GetItem (GLOBAL, iSrc.ToString ()).GetValue (GLOBAL), eltType, out resob))
+						return null;
+					paramset.Add(resob);
+				}
+				result.Add(paramset.ToArray(eltType));
             }
+			else if (iSrc<srcArgsLength)
+				return null;
 
             return result.ToArray();
         }
