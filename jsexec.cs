@@ -364,7 +364,7 @@ namespace pygmalion
                         break;
 
                     case TokenType.While:
-                        while (n.condition != null ||
+                        while (n.condition == null ||
                                JSObject.ToBool(GLOBAL, Reference.GetValue(GLOBAL, execute(n.condition, x))))
                         {
                             try
@@ -505,7 +505,7 @@ namespace pygmalion
                         throw new ThrownException((double)(int)TokenType.Throw);
 
                     case TokenType.Return:
-                        x.result = Reference.GetValue(GLOBAL, execute(n.valueNode, x));
+                        x.result = n.valueNode==null ? JSUndefined.Undefined : Reference.GetValue(GLOBAL, execute(n.valueNode, x));
                         throw new ReturnException();
 
                     case TokenType.With:
@@ -660,11 +660,11 @@ namespace pygmalion
                         break;
 
                     case TokenType.STRICT_EQ:
-                        v = Object.ReferenceEquals(Reference.GetValue(GLOBAL, execute(n[0], x)), Reference.GetValue(GLOBAL, execute(n[1], x)));
+                        v = Object.Equals(Reference.GetValue(GLOBAL, execute(n[0], x)), Reference.GetValue(GLOBAL, execute(n[1], x)));
                         break;
 
                     case TokenType.STRICT_NE:
-                        v = !Object.ReferenceEquals(Reference.GetValue(GLOBAL, execute(n[0], x)), Reference.GetValue(GLOBAL, execute(n[1], x)));
+                        v = !Object.Equals(Reference.GetValue(GLOBAL, execute(n[0], x)), Reference.GetValue(GLOBAL, execute(n[1], x)));
                         break;
 
                     case TokenType.LT:
@@ -820,7 +820,8 @@ namespace pygmalion
                         {
                             r = execute(n[0], x);
                             JSObjectBase args = (JSObjectBase)execute(n[1], x);
-                            JSObjectBase fun = (JSObjectBase)Reference.GetValue(GLOBAL, r);
+							object o=Reference.GetValue(GLOBAL, r);
+							JSObjectBase fun = (JSObjectBase)o;
                             tVal = (r is Reference) ? ((Reference)r).GetBase() : null;
                             if (tVal is Activation)
                                 tVal = null;
@@ -1020,6 +1021,7 @@ namespace pygmalion
             /* Types that work like classes */
             thisOb.DefProp(GLOBAL, "Math", JSClassWrapper.RegisterClass(GLOBAL, typeof(pygmalion.JSMath)));
             thisOb.DefProp(GLOBAL, "Date", JSClassWrapper.RegisterClass(GLOBAL, typeof(pygmalion.JSDate)));
+			thisOb.DefProp(GLOBAL, "Error", JSClassWrapper.RegisterClass(GLOBAL,typeof(pygmalion.JSError)));
 
             /* Standard library */
             thisOb.DefProp(GLOBAL, "decodeURI", new DecodeURIFun());
