@@ -47,6 +47,9 @@
  * an extra level of prototype-based delegation.
  */
 
+// Note: to reduce footprint and startup time non-required parts were commented out
+#define JS_SLIM
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -103,8 +106,10 @@ namespace pygmalion
         ArrayFun StaticArrayFun;
         NumberFun StaticNumberFun;
         FunctionFun StaticFunctionFun;
-        NumberObject StaticNumberObject;
+        //NumberObject StaticNumberObject;
+#if !JS_SLIM
         JSObject DatePrototype;
+#endif
         public readonly ExecutionContext GLOBAL = new ExecutionContext();
 
         void CollectArguments(JSObjectBase v, Node n, ref int k, ExecutionContext x)
@@ -188,7 +193,7 @@ namespace pygmalion
             bool switchLoop;
 
             if (TraceExec)
-                System.Console.Write("Execute[" + n.ToString() + " => ");
+                UnityEngine.Debug.Log("Execute[" + n.ToString() + " => ");
 
             try
             {
@@ -821,6 +826,8 @@ namespace pygmalion
                             r = execute(n[0], x);
                             JSObjectBase args = (JSObjectBase)execute(n[1], x);
 							object o=Reference.GetValue(GLOBAL, r);
+							if (Object.ReferenceEquals(o,JSUndefined.Undefined))
+								throw new TypeError("Can't call undefined "+n[0].ToString()+" "+r);
 							JSObjectBase fun = (JSObjectBase)o;
                             tVal = (r is Reference) ? ((Reference)r).GetBase() : null;
                             if (tVal is Activation)
@@ -893,7 +900,7 @@ namespace pygmalion
                                 tVal.SetItem(GLOBAL, tname, prop);
                             }
                         }
-                        v = tVal;
+						v = tVal;
                         break;
 
                     case TokenType.Null:
@@ -947,7 +954,7 @@ namespace pygmalion
                 throw new ScriptException(e.Message, n, e);
             }
             if (TraceExec)
-                System.Console.WriteLine(v == null ? "(null)" : v.ToString() + " ]");
+                UnityEngine.Debug.Log(v == null ? "(null)" : v.ToString() + " ]");
 
             return v;
         }
@@ -1002,10 +1009,12 @@ namespace pygmalion
             GLOBAL.jobject.SetItem(GLOBAL, "StaticNumberFun", new JSSimpleProperty("StaticNumberFun", StaticNumberFun));
             StaticFunctionFun = new FunctionFun(GLOBAL);
             GLOBAL.jobject.SetItem(GLOBAL, "StaticFunctionFun", new JSSimpleProperty("StaticFunctionFun", StaticFunctionFun));
-            StaticNumberObject = new NumberObject(GLOBAL, 0.0);
+            //StaticNumberObject = new NumberObject(GLOBAL, 0.0);
+#if !JS_SLIM
             DatePrototype = new JSDate(GLOBAL);
             GLOBAL.jobject.SetItem(GLOBAL, "DatePrototype", new JSSimpleProperty("DatePrototype", DatePrototype));
             JSDate.SetupPrototype(GLOBAL, DatePrototype);
+#endif
 
             GLOBAL.jobject.SetItem(GLOBAL, "toString", new JSNativeMethod(typeof(JSObject), "StaticToString"));
 
@@ -1019,6 +1028,7 @@ namespace pygmalion
             thisOb.DefProp(GLOBAL, "Array", StaticArrayFun);
 
             /* Types that work like classes */
+#if !JS_SLIM
             thisOb.DefProp(GLOBAL, "Math", JSClassWrapper.RegisterClass(GLOBAL, typeof(pygmalion.JSMath)));
             thisOb.DefProp(GLOBAL, "Date", JSClassWrapper.RegisterClass(GLOBAL, typeof(pygmalion.JSDate)));
 			thisOb.DefProp(GLOBAL, "Error", JSClassWrapper.RegisterClass(GLOBAL,typeof(pygmalion.JSError)));
@@ -1029,6 +1039,7 @@ namespace pygmalion
             thisOb.DefProp(GLOBAL, "encodeURI", new EncodeURIFun());
             thisOb.DefProp(GLOBAL, "encodeURIComponent", new EncodeURIComponentFun());
             thisOb.DefProp(GLOBAL, "escape", new EscapeFun());
+#endif
             thisOb.DefProp(GLOBAL, "eval", new EvalFun());
             thisOb.DefProp(GLOBAL, "gc", new GcFun());
             thisOb.DefProp(GLOBAL, "Infinity", double.PositiveInfinity, false, false, false);
@@ -1071,7 +1082,7 @@ namespace pygmalion
 
             object s = a.GetItem(GLOBAL, "0").GetValue(GLOBAL);
             if (!(s is string)) return s;
-            string str = (string)s;
+            //string str = (string)s;
 
             ExecutionContext x2 = new ExecutionContext(CodeType.EVAL_CODE);
             x2.thisOb = x.thisOb;
