@@ -1,0 +1,6 @@
+bin
+obj
+*.userprefs
+Info.plist
+*.csproj
+*.sln
