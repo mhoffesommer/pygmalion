@@ -319,6 +319,12 @@ namespace pygmalion
         {
             ArrayFun StaticArrayFun = (ArrayFun)jsexec.GlobalOrNull(GLOBAL, "StaticArrayFun");
             this.SetItem(GLOBAL, "length", new JSNativeProperty(this, GetType().GetProperty("length")));
+            this.SetItem(GLOBAL, "toString", new JSNativeMethod(typeof(JSArray), "StaticToString"));
+            this.SetItem(GLOBAL, "valueOf", new JSNativeMethod(typeof(JSArray), "ToString"));
+            this.SetItem(GLOBAL, "join", new JSNativeMethod(typeof(JSArray), "join"));
+            this.SetItem(GLOBAL, "reverse", new JSNativeMethod(typeof(JSArray), "reverse"));
+            this.SetItem(GLOBAL, "sort", new JSNativeMethod(typeof(JSArray), "sort"));
+            this.SetItem(GLOBAL, "push", new JSNativeMethod(typeof(JSArray), "push"));
             DefProp(GLOBAL, "constructor", StaticArrayFun);
         }
 
@@ -370,11 +376,6 @@ namespace pygmalion
         {
             mPrototype = new JSArray(GLOBAL);
             DefProp(GLOBAL, "prototype", mPrototype, false, false, false);
-            mPrototype.SetItem(GLOBAL, "toString", new JSNativeMethod(typeof(JSArray), "StaticToString"));
-            mPrototype.SetItem(GLOBAL, "valueOf", new JSNativeMethod(typeof(JSArray), "ToString"));
-            mPrototype.SetItem(GLOBAL, "join", new JSNativeMethod(typeof(JSArray), "join"));
-            mPrototype.SetItem(GLOBAL, "reverse", new JSNativeMethod(typeof(JSArray), "reverse"));
-            mPrototype.SetItem(GLOBAL, "sort", new JSNativeMethod(typeof(JSArray), "sort"));
             mPrototype.DefProp(GLOBAL, "constructor", this);
         }
         public override string Class { get { return "function"; } }
