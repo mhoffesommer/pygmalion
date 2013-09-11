@@ -220,12 +220,14 @@ namespace pygmalion
                         else
                         {
                             // Don't cross a line boundary for postfix {in,de}crement.
+						/*
                             if (t.tokens[(t.tokenIndex + t.lookahead - 1) & 3].lineno !=
                                 t.lineno)
                             {
                                 loop_if = true;
                                 break;
                             }
+                            */
 
                             // Use >, not >=, so postfix has higher precedence than prefix.
                             while (operators.Count > 0 && jsdefs.opPrecedence[operators[operators.Count - 1].type] > jsdefs.opPrecedence[tt])

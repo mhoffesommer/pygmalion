@@ -312,7 +312,7 @@ namespace pygmalion
             {
                 string t = tokensList[i];
                 tokens[(TokenType)i] = t;
-                if (new Regex("^[a-z]").IsMatch(t))
+				if (t[0]>='a'&&t[0]<='z')
                 {
                     keywords[t] = (TokenType)i;
                 }
@@ -330,8 +330,10 @@ namespace pygmalion
             {
                 opPrecedence[tt.Key] = tt.Value;
             }
-
-            Tokenizer.InitTokenizer();
+			
+#if UNITY_EDITOR
+			LegacyTokenizer.InitTokenizer();
+#endif
         }
     }
 }
