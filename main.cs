@@ -19,6 +19,7 @@ namespace RunJS
             jsexec exec = new jsexec();
             exec.GLOBAL.jobject.SetItem(exec.GLOBAL, "console", new JSSimpleProperty("console", new JSInstanceWrapper(exec.GLOBAL, new Console(System.Console.Out))));
             exec.GLOBAL.jobject.SetItem(exec.GLOBAL, "Assembly", new JSSimpleProperty("Assembly", new JSClassWrapper(exec.GLOBAL, typeof(System.Reflection.Assembly))));
+			exec.GLOBAL.jobject.SetItem(exec.GLOBAL, "undefined", new JSSimpleProperty("undefined", JSUndefined.Undefined));
             foreach (string arg in args) {
                 using (TextReader tr = File.OpenText(arg)) {
                     string jsfile = tr.ReadToEnd();
