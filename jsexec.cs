@@ -418,13 +418,13 @@ namespace pygmalion
                             }
                             catch (BreakException)
                             {
-                                if (x.target != n)
+                                if (x.target == n)
                                     break;
                                 throw;
                             }
                             catch (ContinueException)
                             {
-                                if (x.target != n)
+                                if (x.target == n)
                                     continue;
                                 throw;
                             }
