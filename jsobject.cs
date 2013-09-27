@@ -263,7 +263,7 @@ namespace pygmalion
 			{
 				bool b1=ToBool(GLOBAL,me),
 					 b2=ToBool(GLOBAL,other);
-				return b1==b2?0:(b1?1:0);
+				return b1==b2?0:(b1?1:-1);
 			}
 			
             if (me is double || other is double)
